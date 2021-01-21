@@ -8,19 +8,20 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      reset_session
-      log_in @user
-      redirect_to user_url( @user )
-      flash[:success] = "Welcome to the Sample App!"
+
+      @user.send_activation_email
+      flash[:info] = "Please check your mails to activate your account"
+      redirect_to(root_url)
     else
-    render 'new'
+      render 'new'
     end
   end
   def index
-    @users = User.paginate(page: params[:page])
+    @users = User.where(activated: true).paginate(page: params[:page])
   end
   def show
     @user = User.find(params[:id])
+    redirect_to root_url and return unless @user.activated?
     #debugger placing this makes it possible to inspect the code at runtime. this could be useful for finding bugs
   end
 
